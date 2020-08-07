@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--自定义耗时对话框-->
+    <style name="CustomProgressDialog" parent="Theme.AppCompat.Dialog">
+        <!--此属性控制悬浮窗背景是否变暗-->
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+
+
+    <style name="RightAnimation" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/anim_right_in</item>
+        <item name="android:windowExitAnimation">@anim/anim_right_out</item>
+    </style>
+
+    <style name="BottomAnimation" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/anim_bottom_in</item>
+        <item name="android:windowExitAnimation">@anim/anim_bottom_out</item>
+    </style>
+
+    <style name="TopAnimation" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/anim_top_in</item>
+        <item name="android:windowExitAnimation">@anim/anim_top_out</item>
+    </style>
+
+    <style name="LeftAnimation" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/anim_left_in</item>
+        <item name="android:windowExitAnimation">@anim/anim_left_out</item>
+    </style>
+
+
+    <style name="custom_dialog2" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <!-- Dialog的windowFrame框为无 -->
+        <item name="android:windowIsFloating">true</item>
+        <!-- 是否漂现在activity上 -->
+        <item name="android:windowIsTranslucent">true</item>
+        <!-- 是否半透明 -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- 去除黑色边框的关键设置项 -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- 屏幕背景是否变暗 -->
+        <item name="android:backgroundDimAmount">0.3</item>
+    </style>
+
+
+    <declare-styleable name="RingProgressView">
+        <attr name="ringColor" format="color"/> <!--//同心圆的颜色-->
+        <attr name="ringProgressColor" format="color"/>  <!--//圆弧进度颜色-->
+        <attr name="ringWidth" format="dimension"/>  <!--//环宽-->
+        <attr name="textSize" format="dimension"/>  <!--//文本字体大小-->
+        <attr name="textColor" format="color"/>  <!--//字体颜色-->
+        <attr name="currentProgress" format="integer"/>  <!--//当前进度-->
+        <attr name="maxProgress" format="integer"/>  <!--// 最大进度-->
+    </declare-styleable>
+
+</resources>

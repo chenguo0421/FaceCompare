@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="portal_color_item_select_bg">#E42542</color>
+    <color name="portal_color_item_unselect_bg">#FFFFFFFF</color>
+</resources>

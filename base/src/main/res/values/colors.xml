@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="common_white">#FFFFFFFF</color>
+    <color name="common_content_bg">#60DCDCDC</color>
+    <color name="common_color_1296db">#FF1296DB</color>
+    <color name="common_color_003366">#FF003366</color>
+    <color name="common_color_002244">#FF002244</color>
+
+    <color name="common_text">#000810</color>
+    <color name="common_text_hint">#959595</color>
+    <color name="line_bg">#b2b2b2</color>
+</resources>

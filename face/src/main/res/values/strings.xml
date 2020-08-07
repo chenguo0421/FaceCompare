@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+ <string name="face_warr_face_engin_init_failed">人脸识别引擎初始化失败</string>
+ <string name="face_warr_snapshot_path_empty">请先选取左边目标图</string>
+ <string name="face_warr_compare_path_empty">请先选取右边对比图片</string>
+    <string name="library_not_found">缺少必要的库文件，请与管理员联系</string>
+ <string name="active_success">激活成功</string>
+ <string name="already_activated">已激活过</string>
+ <string name="active_failed">激活失败 %d</string>
+ <string name="permission_denied">缺少必要权限</string>
+ <string name="face_str_warr_no_face">未找到人脸，请使用带有一张人脸的图片重新操作！</string>
+</resources>

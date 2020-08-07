@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="common_view_line_04">0.4dp</dimen>
+
+    <dimen name="layout_margin_s">16dp</dimen>
+    <dimen name="layout_margin_m">24dp</dimen>
+    <dimen name="layout_margin_vertical">8dp</dimen>
+    <dimen name="layout_margin_4">4dp</dimen>
+    <dimen name="layout_margin_10">10dp</dimen>
+    <dimen name="layout_margin_16">16dp</dimen>
+    <dimen name="layout_margin_20">20dp</dimen>
+    <dimen name="layout_margin_60">60dp</dimen>
+    <dimen name="layout_margin_100">100dp</dimen>
+    <dimen name="layout_margin_start_10">10dp</dimen>
+    <dimen name="face_image_minH">60dp</dimen>
+    <dimen name="face_image_minW">80dp</dimen>
+    <dimen name="face_image_maxH">120dp</dimen>
+    <dimen name="face_image_maxW">160dp</dimen>
+
+    <dimen name="text_size_10">10sp</dimen>
+    <dimen name="text_size_12">12sp</dimen>
+    <dimen name="text_size_14">14sp</dimen>
+    <!-- Size of notification text (see TextAppearance.StatusBar.EventContent) -->
+    <dimen name="notification_text_size">16sp</dimen>
+    <!-- Size of notification text titles (see TextAppearance.StatusBar.EventContent.Title) -->
+    <dimen name="notification_title_text_size">18sp</dimen>
+</resources>
