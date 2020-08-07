@@ -1,0 +1,2 @@
+# FaceCompare
+一款基于虹软人脸识别SDK实现的人脸1V1比对Demo
