@@ -41,6 +41,7 @@ import com.cg.face.album.model.FaceGatherModel;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 import io.reactivex.Observable;
@@ -59,7 +60,7 @@ public class FaceGatherPresenter extends FaceGatherContract.IPresenter<FaceGathe
 
     private final FaceGatherContract.IModel model;
 
-
+    ReentrantLock closeLock = new ReentrantLock();
 
     private final String TAG = getClass().getName();
 
@@ -83,6 +84,7 @@ public class FaceGatherPresenter extends FaceGatherContract.IPresenter<FaceGathe
     int cOrientation;
     Size captureSize;
     boolean isFront;
+    private boolean isClose = true;
 
 
     private Size size = new Size(480,640);
@@ -100,7 +102,13 @@ public class FaceGatherPresenter extends FaceGatherContract.IPresenter<FaceGathe
     @Override
     public void startCamera() {
         closeCamera();
-        new Handler().postDelayed(() -> openCamera(mCameraId),300);
+        if (isClose){
+            if (getView().getTextureView().getTextureView().isAvailable()) {
+                openCamera(mCameraId);
+            } else {
+                getView().getTextureView().getTextureView().setSurfaceTextureListener(null);
+            }
+        }
     }
 
     @Override
@@ -111,7 +119,13 @@ public class FaceGatherPresenter extends FaceGatherContract.IPresenter<FaceGathe
         }else {
             mCameraId = CameraCharacteristics.LENS_FACING_BACK;
         }
-        new Handler().postDelayed(() -> openCamera(mCameraId),300);
+        if (isClose){
+            if (getView().getTextureView().getTextureView().isAvailable()) {
+                openCamera(mCameraId);
+            } else {
+                getView().getTextureView().getTextureView().setSurfaceTextureListener(null);
+            }
+        }
         return mCameraId;
     }
 
@@ -255,6 +269,7 @@ public class FaceGatherPresenter extends FaceGatherContract.IPresenter<FaceGathe
                 @Override
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest
                         request, @NonNull TotalCaptureResult result) {
+                    isClose = false;
                     onCameraImagePreviewed(result);
                 }
             };
@@ -454,6 +469,10 @@ public class FaceGatherPresenter extends FaceGatherContract.IPresenter<FaceGathe
                 .subscribe();
     }
 
+    @Override
+    public boolean isCloseCamera() {
+        return isClose;
+    }
 
 
     private void deleteFace(File file) {
@@ -468,52 +487,57 @@ public class FaceGatherPresenter extends FaceGatherContract.IPresenter<FaceGathe
     @SuppressLint("NewApi")
     @Override
     public void closeCamera() {
-        if (cSession != null) {
-            try {
-                cSession.stopRepeating();
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
+        closeLock.lock();
+        synchronized (closeLock){
+            if (cSession != null) {
+                try {
+                    cSession.stopRepeating();
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
+                }
+                cSession.close();
+                cSession = null;
             }
-            cSession.close();
-            cSession = null;
-        }
 
-        if (cDevice != null) {
-            cDevice.close();
-            cDevice = null;
-        }
-        if (cImageReader != null) {
-            cImageReader.close();
-            cImageReader = null;
-            captureRequestBuilder = null;
-        }
-        if (cHandlerThread != null) {
-            cHandlerThread.quitSafely();
-            try {
-                cHandlerThread.join();
-                cHandlerThread = null;
-                cHandler = null;
-            } catch (InterruptedException e) {
-                Log.i(TAG, Log.getStackTraceString(e));
+            if (cDevice != null) {
+                cDevice.close();
+                cDevice = null;
             }
-        }
+            if (cImageReader != null) {
+                cImageReader.close();
+                cImageReader = null;
+                captureRequestBuilder = null;
+            }
+            if (cHandlerThread != null) {
+                cHandlerThread.quitSafely();
+                try {
+                    cHandlerThread.join();
+                    cHandlerThread = null;
+                    cHandler = null;
+                } catch (InterruptedException e) {
+                    Log.i(TAG, Log.getStackTraceString(e));
+                }
+            }
 
-        if (captureRequestBuilder != null) {
-            captureRequestBuilder.removeTarget(captureSurface);
-            captureRequestBuilder = null;
+            if (captureRequestBuilder != null) {
+                captureRequestBuilder.removeTarget(captureSurface);
+                captureRequestBuilder = null;
+            }
+            if (captureSurface != null) {
+                captureSurface.release();
+                captureSurface = null;
+            }
+            if (previewRequestBuilder != null) {
+                previewRequestBuilder.removeTarget(previewSurface);
+                previewRequestBuilder = null;
+            }
+            if (previewSurface != null) {
+                previewSurface.release();
+                previewSurface = null;
+            }
+            isClose = true;
         }
-        if (captureSurface != null) {
-            captureSurface.release();
-            captureSurface = null;
-        }
-        if (previewRequestBuilder != null) {
-            previewRequestBuilder.removeTarget(previewSurface);
-            previewRequestBuilder = null;
-        }
-        if (previewSurface != null) {
-            previewSurface.release();
-            previewSurface = null;
-        }
+        closeLock.unlock();
     }
 
 }

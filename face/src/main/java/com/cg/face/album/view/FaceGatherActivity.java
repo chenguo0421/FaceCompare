@@ -1,18 +1,21 @@
 package com.cg.face.album.view;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Message;
+import android.provider.MediaStore;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
 import com.cg.base.base.BaseActivity;
 import com.cg.base.utils.Constant;
+import com.cg.base.utils.DataUtils;
+import com.cg.base.utils.FileUtils;
 import com.cg.base.utils.ToastUtils;
 import com.cg.base.widget.gather.FaceGatherTextureView;
 import com.cg.face.R;
@@ -20,6 +23,8 @@ import com.cg.face.album.contract.FaceGatherContract;
 import com.cg.face.album.intf.OnImageDialogBack;
 import com.cg.face.album.presenter.FaceGatherPresenter;
 import com.cg.face.album.view.fragment.ImageDialogFragment;
+
+import java.io.File;
 
 
 /**
@@ -30,11 +35,16 @@ import com.cg.face.album.view.fragment.ImageDialogFragment;
  * @Version: 1.0
  */
 public class FaceGatherActivity extends BaseActivity<FaceGatherContract.IView, FaceGatherContract.IPresenter<FaceGatherContract.IView>> implements FaceGatherContract.IView, FaceGatherTextureView.OnFaceGatherViewClick, View.OnClickListener, OnImageDialogBack {
-
+    private static final int SELECT_PIC_BY_PICK_PHOTO = 1000;
+    private static final int START_CAMERA = 200;
+    private static final int CLOSE_CAMERA = 201;
+    private static final int CROP_REQUEST_CODE = 202;
     private static String TAG = "DetectFaceActivity";
     private FaceGatherTextureView cView;//用于相机预览
     private AppCompatImageView iv_back;
     private int from;
+    private File file;
+    private Handler handler = new MyHandler();
 
 
     @Override
@@ -77,13 +87,16 @@ public class FaceGatherActivity extends BaseActivity<FaceGatherContract.IView, F
     @Override
     protected void onResume() {
         super.onResume();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mPresenter.startCamera();
-            }
-        },300);
+        handler.sendEmptyMessageDelayed(START_CAMERA,500);
     }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.sendEmptyMessage(CLOSE_CAMERA);
+    }
+
 
     @Override
     public void onTakePhotoViewClick() {
@@ -100,35 +113,55 @@ public class FaceGatherActivity extends BaseActivity<FaceGatherContract.IView, F
     @Override
     public void onOpenAlbumViewClick() {
         //打开相册
-        Intent intent = new Intent(Intent.ACTION_PICK);  //跳转到 ACTION_IMAGE_CAPTURE
-        intent.setType("image/*");
-        startActivityForResult(intent,1000);
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+        startActivityForResult(intent, SELECT_PIC_BY_PICK_PHOTO);
+        file = null;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1000 && resultCode == RESULT_OK) {
-            Uri uri = data.getData();
-            try {
-                Glide.with(FaceGatherActivity.this).load(uri).asBitmap().into(new SimpleTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(final Bitmap bitmap, GlideAnimation<? super Bitmap> glideAnimation) {
-                        mPresenter.reSizeBitmap(bitmap, false);
-                    }
-                });
-            }catch (Exception e){
-                e.printStackTrace();
+        if (requestCode == SELECT_PIC_BY_PICK_PHOTO && resultCode == RESULT_OK) {
+            //拿到图片资源后开始图片裁剪
+            startActivityForResult(crop(data.getData()), CROP_REQUEST_CODE);
+        }else if (requestCode == CROP_REQUEST_CODE && resultCode == RESULT_OK){
+            if (file != null) {
+                onCaptureFaceSuccess(file.getAbsolutePath());
             }
-
         }
+    }
 
+    /**
+     * 跳转系统裁剪图片
+     * @param uri
+     * @return
+     */
+    private Intent crop(Uri uri) {
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri, "image/*");
+        intent.putExtra("crop", "true");// 可裁剪
+        intent.putExtra("aspectX", 1);// 裁剪的宽比例
+        intent.putExtra("aspectY", 1);// 裁剪的高比例
+        intent.putExtra("outputX", 800);// 裁剪的宽度
+        intent.putExtra("outputY", 800);// 裁剪的高度
+        intent.putExtra("scale", true);// 是否支持缩放
+
+        file = new File(FileUtils.getImageCacheDirPath(this), DataUtils.getCurrentDate("-") + "-" + DataUtils.getCurrentTime("-") + ".jpg");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
+        // 是否返回数据
+        intent.putExtra("return-data", false);
+        // 裁剪成的图片的输出格式
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+        //是否关闭人脸识别
+        //intent.putExtra("noFaceDetection", true);
+        return intent;
     }
 
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.iv_back){
-            mPresenter.closeCamera();
+            handler.sendEmptyMessage(CLOSE_CAMERA);
             finish();
         }
     }
@@ -160,12 +193,29 @@ public class FaceGatherActivity extends BaseActivity<FaceGatherContract.IView, F
 
     @Override
     public void onDestroy() {
-        mPresenter.closeCamera();
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+        if (!mPresenter.isCloseCamera()) {
+            mPresenter.closeCamera();
+        }
         super.onDestroy();
     }
 
     @Override
     public void onImageDialogBack() {
         mPresenter.startCamera();
+    }
+
+    @SuppressLint("HandlerLeak")
+    class MyHandler extends Handler{
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            if (msg.what == START_CAMERA){
+                mPresenter.startCamera();
+            }else if (msg.what == CLOSE_CAMERA){
+                mPresenter.closeCamera();
+            }
+        }
     }
 }

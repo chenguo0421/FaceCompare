@@ -41,6 +41,8 @@ public interface FaceGatherContract {
         public abstract int switchCamera();
 
         public abstract void reSizeBitmap(Bitmap bitmap, boolean b);
+
+        public abstract boolean isCloseCamera();
     }
 
     abstract class IModel extends BaseModel {
