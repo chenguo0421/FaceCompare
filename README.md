@@ -1,5 +1,5 @@
 # FaceCompare
-一款基于虹软人脸识别SDK实现的人脸1V1比对Demo
+一款基于虹软人脸识别SDK实现的人脸1V1比对Demo,支持拍照，相册选择照片，可对选中的两张人脸图片进行比对，得到相似度。
 
 # 示例图片
 ![层级结构](image/test.jpg) ![层级结构](image/test1.jpg)
